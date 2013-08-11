@@ -3,6 +3,9 @@
 
     <string name="app_name">PhoneScan</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="action_connect">Connect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="label_ipaddress">IP:</string>
+    <string name="label_status">Status:</string>
 
 </resources>
