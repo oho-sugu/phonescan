@@ -4,8 +4,11 @@
 package net.ohoooo.androidapps.phonescan;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.util.AttributeSet;
@@ -25,6 +28,7 @@ public class CameraView extends SurfaceView
 	private Camera camera = null;
 	
 	private Boolean taking = false;
+	private CameraView cameraView = null;
 	
 	/**
 	 * @param context
@@ -48,6 +52,7 @@ public class CameraView extends SurfaceView
 		holder = getHolder();
 		holder.addCallback(this);
 		//holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		cameraView = this;
 	}
 
 	@Override
@@ -75,8 +80,12 @@ public class CameraView extends SurfaceView
 			return;
 		}
 		camera = Camera.open();
+		Log.d("PhoneScan","FocusMode"+camera.getParameters().getFocusMode());
+		Log.d("PhoneScan","MaxNumFocusArea"+camera.getParameters().getMaxNumFocusAreas());
+		Log.d("PhoneScan","MaxNumMeteringArea"+camera.getParameters().getMaxNumMeteringAreas());
 		try {
 			camera.setPreviewDisplay(holder);
+			camera.setDisplayOrientation(90);
 		} catch (IOException e){
 			if(camera != null) {
 				camera.release();
@@ -98,11 +107,23 @@ public class CameraView extends SurfaceView
 			if(!taking) {
 				taking = true;
 				if(event.getAction() == MotionEvent.ACTION_DOWN) {
-					camera.takePicture(null, null, null, this);
+					List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
+					focusAreas.add(new Camera.Area(new Rect(-50, 50, 50, -50), 1000));
+					camera.getParameters().setFocusAreas(focusAreas);
+					camera.getParameters().setMeteringAreas(focusAreas);
+					camera.autoFocus(autoFocusListener);
+					//camera.takePicture(null, null, null, this);
 				}
 			}
 		}
 		
 		return super.onTouchEvent(event);
 	}
+	private Camera.AutoFocusCallback autoFocusListener = new Camera.AutoFocusCallback() {
+		
+		@Override
+		public void onAutoFocus(boolean success, Camera camera) {
+			camera.takePicture(null, null, cameraView);
+		}
+	};
 }
